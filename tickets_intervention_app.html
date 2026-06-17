@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Tickets — Turquoise Propriétés</title>
+<style>
+:root {
+  --tq:#45B5A9;--tq-l:#BCE4E3;--tq-p:#D6EEEE;
+  --dark:#1A1A1A;--grey:#555;--grey-l:#E8E8E8;
+  --green:#4CAF7D;--orange:#E8913A;--red:#E05252;--blue:#3A8FE8;
+  --font:'Trebuchet MS','Century Gothic',sans-serif;
+  --r:12px;--sh:0 2px 12px rgba(0,0,0,0.09);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--font);background:#F4F8F8;color:var(--dark);min-height:100vh;padding-bottom:90px}
+
+.hdr{background:var(--tq);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(69,181,169,.3)}
+.hdr-logo{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;line-height:1.3}
+.hdr-sub{font-size:9px;opacity:.75}
+.hdr-step{margin-left:auto;font-size:12px;background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-weight:600}
+
+.scr{display:none;padding:16px}.scr.on{display:block}
+.prog-w{background:var(--grey-l);border-radius:4px;height:4px;margin-bottom:18px;overflow:hidden}
+.prog-b{height:100%;background:var(--tq);border-radius:4px;transition:width .4s}
+
+.card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:18px;margin-bottom:14px}
+.card-t{font-size:12px;font-weight:700;color:var(--tq);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-t::before{content:'';display:block;width:3px;height:15px;background:var(--tq);border-radius:2px}
+
+.f{margin-bottom:12px}
+.f label{display:block;font-size:11px;font-weight:700;color:var(--grey);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.f input,.f select,.f textarea{width:100%;padding:12px 13px;border:1.5px solid var(--grey-l);border-radius:8px;font-family:var(--font);font-size:15px;color:var(--dark);background:#fff;transition:border-color .2s;-webkit-appearance:none}
+.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--tq)}
+.f textarea{resize:none;line-height:1.5}
+.f select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2345B5A9' stroke-width='2' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+
+/* PRIORITÉ */
+.prio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px}
+.prio-opt{border:2px solid var(--grey-l);border-radius:10px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .2s;background:#fff}
+.prio-opt .pico{font-size:22px;margin-bottom:4px}
+.prio-opt .pnm{font-size:11px;font-weight:700}
+.prio-opt.sel-urgent{border-color:var(--red);background:#FFF0F0}
+.prio-opt.sel-normal{border-color:var(--orange);background:#FFF8F0}
+.prio-opt.sel-planifie{border-color:var(--green);background:#F0FFF6}
+
+/* CHECKBOX */
+.chk-row{display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--grey-l);border-radius:8px;cursor:pointer;transition:all .2s;margin-bottom:8px}
+.chk-row.on{border-color:var(--tq);background:var(--tq-p)}
+.chk-box{width:24px;height:24px;border:2px solid var(--grey-l);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;background:#fff}
+.chk-row.on .chk-box{background:var(--tq);border-color:var(--tq);color:#fff}
+.chk-txt{font-size:13px;color:var(--dark)}
+
+/* PHOTO */
+.photo-zone{border:2px dashed var(--tq-l);border-radius:10px;padding:18px;text-align:center;background:var(--tq-p);cursor:pointer;position:relative;margin-bottom:12px}
+.photo-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.pz-ico{font-size:32px;margin-bottom:6px}
+.pz-t{font-size:13px;font-weight:600;color:var(--tq)}
+.pz-s{font-size:11px;color:var(--grey);margin-top:3px}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}
+.pthumb{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;background:var(--grey-l)}
+.pthumb img{width:100%;height:100%;object-fit:cover}
+.pthumb .del{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* SIGNATURE */
+canvas.sig{width:100%;height:180px;border:2px solid var(--grey-l);border-radius:10px;touch-action:none;background:#fff;cursor:crosshair;display:block}
+.sig-tb{display:flex;gap:8px;margin-top:8px}
+
+/* BOUTONS */
+.btn{display:block;width:100%;padding:15px;border:none;border-radius:10px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;text-align:center}
+.btn:active{opacity:.85;transform:scale(.98)}
+.btn-p{background:var(--tq);color:#fff}
+.btn-s{background:#fff;color:var(--tq);border:2px solid var(--tq)}
+.btn-d{background:#FFF0F0;color:var(--red);border:2px solid #FFE0E0}
+.btn-sm{padding:9px 14px;font-size:12px;width:auto;display:inline-block}
+.btn-drive{background:#1A73E8;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px}
+
+.bnav{position:fixed;bottom:0;left:0;right:0;background:#fff;padding:12px 16px;display:flex;gap:10px;box-shadow:0 -2px 10px rgba(0,0,0,.08);z-index:200}
+.bnav .btn{margin:0}
+
+/* RÉSUMÉ */
+.res-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--grey-l);font-size:13px}
+.res-row:last-child{border:none}
+.res-label{color:var(--grey);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.res-val{font-weight:600;text-align:right;max-width:60%}
+.badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.b-urgent{background:#FFE8E8;color:var(--red)}
+.b-normal{background:#FFF3E8;color:var(--orange)}
+.b-planifie{background:#E8F8EF;color:var(--green)}
+
+/* SUCCÈS */
+.suc-ico{width:72px;height:72px;background:var(--tq);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:28px auto 18px}
+.suc-t{text-align:center;font-size:21px;font-weight:700;margin-bottom:7px}
+.suc-s{text-align:center;font-size:13px;color:var(--grey);margin-bottom:24px;line-height:1.6}
+.sum-box{background:var(--tq-p);border:1px solid var(--tq-l);border-radius:10px;padding:15px;margin-bottom:14px;font-size:13px;line-height:1.9}
+.sum-box strong{color:var(--tq)}
+
+/* STEPS DRIVE */
+.steps-drive{list-style:none;padding:0;margin:14px 0}
+.steps-drive li{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--grey-l)}
+.steps-drive li:last-child{border-bottom:none}
+.step-num{flex-shrink:0;width:28px;height:28px;background:var(--tq);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.step-txt{font-size:13px;color:var(--dark);line-height:1.5}
+.step-txt strong{color:var(--tq);display:block;margin-bottom:2px}
+.step-txt em{font-size:11px;color:var(--grey);font-style:normal}
+
+.info-box{background:var(--tq-p);border:1px solid var(--tq-l);border-radius:8px;padding:11px 13px;font-size:12px;color:#1A5A55;margin-bottom:12px;line-height:1.6}
+.alert-box{background:#FFF8E8;border:1px solid #FFE8A0;border-radius:8px;padding:11px 13px;font-size:12px;color:#7A5A00;margin-bottom:12px;line-height:1.5}
+.dl-status{text-align:center;padding:12px;font-size:13px;color:var(--green);display:none}
+.dl-status.show{display:block}
+.mt8{margin-top:8px}.mb0{margin-bottom:0}.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <div class="hdr-logo">Turquoise Propriétés</div>
+    <div class="hdr-sub">Rapport d'intervention</div>
+  </div>
+  <div class="hdr-step" id="stepInd">Étape 1 / 4</div>
+</div>
+
+<!-- ══ ÉCRAN 1 — INFO TICKET ══ -->
+<div class="scr on" id="s1">
+  <div class="prog-w"><div class="prog-b" style="width:25%"></div></div>
+
+  <div class="card">
+    <div class="card-t">Priorité</div>
+    <div class="prio-grid">
+      <div class="prio-opt" onclick="pickPrio('urgent',this)">
+        <div class="pico">🔴</div><div class="pnm">Urgent</div>
+        <div style="font-size:10px;color:var(--grey);margin-top:2px">24-48h</div>
+      </div>
+      <div class="prio-opt" onclick="pickPrio('normal',this)">
+        <div class="pico">🟡</div><div class="pnm">Normal</div>
+        <div style="font-size:10px;color:var(--grey);margin-top:2px">1-2 semaines</div>
+      </div>
+      <div class="prio-opt" onclick="pickPrio('planifie',this)">
+        <div class="pico">🟢</div><div class="pnm">Planifié</div>
+        <div style="font-size:10px;color:var(--grey);margin-top:2px">Selon dispo</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-t">Localisation</div>
+    <div class="f">
+      <label>Bâtiment</label>
+      <select id="batiment">
+        <option value="">— Sélectionner —</option>
+        <option>253 rue High, Sherbrooke</option>
+        <option>535, 15e Avenue Sud, Sherbrooke</option>
+        <option>1010 Courcelette, Sherbrooke</option>
+      </select>
+    </div>
+    <div class="f">
+      <label>Unité / Logement</label>
+      <input type="text" id="unite" placeholder="ex. Unité 3, Unité 9, Commun...">
+    </div>
+    <div class="f">
+      <label>Nom du locataire (si applicable)</label>
+      <input type="text" id="locataire" placeholder="ex. Marie Tremblay — laisser vide si bâtiment">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-t">Intervention</div>
+    <div class="f">
+      <label>Catégorie</label>
+      <select id="categorie">
+        <option value="">— Sélectionner —</option>
+        <optgroup label="🏠 Intérieur logement">
+          <option>🚿 Plomberie</option>
+          <option>⚡ Électricité</option>
+          <option>🔥 Chauffage</option>
+          <option>❄️ Climatisation</option>
+          <option>🚪 Portes et fenêtres</option>
+          <option>🍳 Électroménager</option>
+          <option>🧹 Nettoyage / Salubrité</option>
+          <option>🏗️ Murs et planchers</option>
+        </optgroup>
+        <optgroup label="🏢 Bâtiment & extérieurs">
+          <option>🏚️ Toiture / Gouttières</option>
+          <option>🏢 Entrée commune</option>
+          <option>🅿️ Stationnement / Terrain</option>
+          <option>❄️ Déneigement</option>
+          <option>🗑️ Bacs à ordures</option>
+        </optgroup>
+        <optgroup label="⚠️ Spécial">
+          <option>🚨 Urgence</option>
+          <option>🔍 Inspection préventive</option>
+          <option>📦 Autre</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="f">
+      <label>Description du problème signalé</label>
+      <textarea id="description" rows="3" placeholder="Ex. : Fuite sous l'évier de cuisine, eau qui coule depuis ce matin..."></textarea>
+    </div>
+    <div class="f">
+      <label>Date de l'intervention</label>
+      <input type="date" id="dateInter">
+    </div>
+    <div class="f">
+      <label>Intervenant</label>
+      <input type="text" id="intervenant" placeholder="ex. Thony">
+    </div>
+  </div>
+
+  <div class="bnav">
+    <button class="btn btn-p" onclick="goS2()">Suivant — Travaux →</button>
+  </div>
+</div>
+
+<!-- ══ ÉCRAN 2 — TRAVAUX ══ -->
+<div class="scr" id="s2">
+  <div class="prog-w"><div class="prog-b" style="width:50%"></div></div>
+
+  <div class="card">
+    <div class="card-t">Détail de l'intervention</div>
+    <div class="f">
+      <label>Heure d'arrivée</label>
+      <input type="time" id="heureArrivee">
+    </div>
+    <div class="f">
+      <label>Heure de départ</label>
+      <input type="time" id="heureDepart">
+    </div>
+    <div class="f">
+      <label>Travaux effectués</label>
+      <textarea id="travauxEffectues" rows="5" placeholder="Décrivez précisément ce qui a été fait : pièces remplacées, actions posées, matériaux utilisés...&#10;&#10;Ex. : Remplacement du joint sous le siphon de l'évier. Vérification de la tuyauterie. Aucune autre fuite détectée."></textarea>
+    </div>
+    <div class="f">
+      <label>Statut de l'intervention</label>
+      <select id="statut">
+        <option value="✅ Complété">✅ Complété — Problème résolu</option>
+        <option value="🔁 Suivi requis">🔁 Suivi requis — Retour nécessaire</option>
+        <option value="🔧 En cours">🔧 En cours — Travaux partiels</option>
+      </select>
+    </div>
+    <div class="f">
+      <label>Notes additionnelles</label>
+      <textarea id="notes" rows="2" placeholder="Observations, recommandations, matériaux à commander..."></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-t">Fournisseur / Sous-traitant</div>
+    <div class="f mb0">
+      <label>Nom (si applicable)</label>
+      <input type="text" id="fournisseur" placeholder="ex. Plomberie Lavoie — laisser vide si Thony seul">
+    </div>
+  </div>
+
+  <div class="bnav">
+    <button class="btn btn-s" style="flex:1" onclick="showS('s1')">← Retour</button>
+    <button class="btn btn-p" style="flex:2" onclick="goS3()">Suivant — Photos →</button>
+  </div>
+</div>
+
+<!-- ══ ÉCRAN 3 — PHOTOS + SIGNATURE ══ -->
+<div class="scr" id="s3">
+  <div class="prog-w"><div class="prog-b" style="width:75%"></div></div>
+
+  <div class="card">
+    <div class="card-t">Photos avant / pendant / après</div>
+    <div class="pgrid" id="pgrid"></div>
+    <div class="photo-zone">
+      <input type="file" id="photoIn" accept="image/*" multiple onchange="addPhotos(event)">
+      <div class="pz-ico">📷</div>
+      <div class="pz-t">Prendre ou choisir des photos</div>
+      <div class="pz-s">Avant / pendant / après — plusieurs à la fois</div>
+    </div>
+    <div class="alert-box">💡 Prenez des photos <strong>avant</strong> de commencer et <strong>après</strong> avoir terminé. C'est votre preuve en cas de litige TAL.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-t">Signature du locataire</div>
+    <div class="chk-row" id="chkSig" onclick="toggleSig()">
+      <div class="chk-box" id="chkBox">✓</div>
+      <div class="chk-txt">Le locataire est présent et accepte de signer</div>
+    </div>
+
+    <div id="sigBlock" class="hidden">
+      <p style="font-size:12px;color:var(--grey);margin-bottom:10px">Remettre le téléphone au locataire pour signer avec le doigt.</p>
+      <canvas class="sig" id="sig1"></canvas>
+      <div class="sig-tb">
+        <button class="btn btn-d btn-sm" onclick="clearSig()">🗑 Effacer</button>
+        <span style="font-size:11px;color:var(--grey);display:flex;align-items:center;padding:0 8px">← Signer avec le doigt</span>
+      </div>
+      <div class="f mt8 mb0">
+        <label>Nom du locataire</label>
+        <input type="text" id="nomLocSig" placeholder="Nom complet">
+      </div>
+    </div>
+  </div>
+
+  <div class="bnav">
+    <button class="btn btn-s" style="flex:1" onclick="showS('s2')">← Retour</button>
+    <button class="btn btn-p" style="flex:2" onclick="goS4()">Résumé & Envoyer →</button>
+  </div>
+</div>
+
+<!-- ══ ÉCRAN 4 — RÉSUMÉ + EXPORT ══ -->
+<div class="scr" id="s4">
+  <div class="prog-w"><div class="prog-b" style="width:100%"></div></div>
+
+  <div class="card">
+    <div class="card-t">Résumé du rapport</div>
+    <div id="resumeContent"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-t">Étape 1 — Télécharger le rapport</div>
+    <p style="font-size:13px;color:var(--grey);margin-bottom:14px">Appuyez pour sauvegarder le fichier sur votre téléphone.</p>
+    <button class="btn btn-p" id="btnDl" onclick="dlData()">💾 Télécharger le fichier rapport</button>
+    <div class="dl-status" id="dlStatus">✅ Fichier téléchargé — passez à l'étape 2</div>
+  </div>
+
+  <div class="card">
+    <div class="card-t">Étape 2 — Envoyer dans Google Drive</div>
+    <ul class="steps-drive">
+      <li>
+        <div class="step-num">1</div>
+        <div class="step-txt"><strong>Ouvrez l'app Google Drive</strong>Cherchez l'icône triangle coloré 🔺 sur votre téléphone</div>
+      </li>
+      <li>
+        <div class="step-num">2</div>
+        <div class="step-txt"><strong>Allez dans "Partagés avec moi"</strong><em>Dossier → "Maintenance & Réparation" → dossier du bon locataire ou bâtiment</em></div>
+      </li>
+      <li>
+        <div class="step-num">3</div>
+        <div class="step-txt"><strong>Appuyez sur + → Importer</strong><em>Téléchargements → sélectionnez le fichier <span id="nomFichierStep" style="color:var(--tq);font-weight:700"></span></em></div>
+      </li>
+      <li>
+        <div class="step-num">4</div>
+        <div class="step-txt"><strong>C'est envoyé ✅</strong><em>Catriona recevra le fichier et générera le PDF final.</em></div>
+      </li>
+    </ul>
+    <div class="info-box">💡 En cas de doute sur le dossier, envoyez le fichier à Catriona directement par WhatsApp.</div>
+    <a href="https://drive.google.com/drive/folders/1F9ITVwfGD67crHaKJjDG_y0Cwkbjm-zg" target="_blank" style="text-decoration:none">
+      <button class="btn btn-drive mt8">
+        <svg width="18" height="18" viewBox="0 0 87.3 78" fill="none"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066DA"/><path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 49.5C.4 50.9 0 52.45 0 54h27.5z" fill="#00AC47"/><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H59.8l5.85 11.5z" fill="#EA4335"/><path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.95 0H34.35c-1.55 0-3.1.45-4.45 1.2z" fill="#00832D"/><path d="M59.8 54H27.5L13.75 77.8c1.35.8 2.9 1.2 4.45 1.2h50.9c1.55 0 3.1-.45 4.45-1.2z" fill="#2684FC"/><path d="M73.4 27L60.7 4.5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25 59.8 54h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#FFBA00"/></svg>
+        Ouvrir Google Drive
+      </button>
+    </a>
+  </div>
+
+  <div style="padding:0 16px 16px">
+    <button class="btn btn-s" onclick="resetApp()">+ Nouveau rapport</button>
+  </div>
+</div>
+
+<script>
+let S = {
+  priorite:null, batiment:'', unite:'', locataire:'', categorie:'',
+  description:'', dateInter:'', intervenant:'',
+  heureArrivee:'', heureDepart:'', travauxEffectues:'', statut:'✅ Complété',
+  notes:'', fournisseur:'',
+  photos:[], sigActive:false, sigImage:null, nomLocSig:'',
+  nomFichier:''
+};
+let sigCtx=null, sigDrawing=false;
+
+function showS(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+  const map={s1:'1 / 4',s2:'2 / 4',s3:'3 / 4',s4:'4 / 4'};
+  document.getElementById('stepInd').textContent='Étape '+(map[id]||'');
+}
+
+function pickPrio(val,el){
+  S.priorite=val;
+  document.querySelectorAll('.prio-opt').forEach(e=>{e.className='prio-opt'});
+  el.classList.add('sel-'+val);
+}
+
+function goS2(){
+  if(!S.priorite){alert('Choisissez une priorité.');return}
+  if(!document.getElementById('batiment').value){alert('Sélectionnez le bâtiment.');return}
+  if(!document.getElementById('categorie').value){alert('Sélectionnez la catégorie.');return}
+  if(!document.getElementById('description').value.trim()){alert('Décrivez le problème.');return}
+  if(!document.getElementById('dateInter').value){alert('Entrez la date.');return}
+  if(!document.getElementById('intervenant').value.trim()){alert('Entrez le nom de l\'intervenant.');return}
+  S.batiment=document.getElementById('batiment').value;
+  S.unite=document.getElementById('unite').value.trim();
+  S.locataire=document.getElementById('locataire').value.trim();
+  S.categorie=document.getElementById('categorie').value;
+  S.description=document.getElementById('description').value.trim();
+  S.dateInter=document.getElementById('dateInter').value;
+  S.intervenant=document.getElementById('intervenant').value.trim();
+  showS('s2');
+}
+
+function goS3(){
+  S.heureArrivee=document.getElementById('heureArrivee').value;
+  S.heureDepart=document.getElementById('heureDepart').value;
+  S.travauxEffectues=document.getElementById('travauxEffectues').value.trim();
+  S.statut=document.getElementById('statut').value;
+  S.notes=document.getElementById('notes').value.trim();
+  S.fournisseur=document.getElementById('fournisseur').value.trim();
+  showS('s3');
+  if(S.sigActive) setTimeout(()=>initSig(),300);
+}
+
+function goS4(){
+  S.nomLocSig=document.getElementById('nomLocSig')?.value.trim()||'';
+  if(S.sigActive){
+    const c=document.getElementById('sig1');
+    const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;
+    if(!d.some(v=>v!==0)){alert('La signature du locataire est requise car vous avez coché cette option.');return}
+    if(!S.nomLocSig){alert('Confirmez le nom du locataire.');return}
+    S.sigImage=c.toDataURL('image/png');
+  }
+  buildResume();
+  showS('s4');
+}
+
+// Photos
+function addPhotos(ev){
+  Array.from(ev.target.files).forEach(f=>{
+    const r=new FileReader();
+    r.onload=e=>{S.photos.push(e.target.result);renderPhotos()};
+    r.readAsDataURL(f);
+  });
+  ev.target.value='';
+}
+function renderPhotos(){
+  const g=document.getElementById('pgrid');
+  g.innerHTML='';
+  S.photos.forEach((b,i)=>{
+    const d=document.createElement('div');
+    d.className='pthumb';
+    d.innerHTML=`<img src="${b}"><button class="del" onclick="delPhoto(${i})">×</button>`;
+    g.appendChild(d);
+  });
+}
+function delPhoto(i){S.photos.splice(i,1);renderPhotos()}
+
+// Signature toggle
+function toggleSig(){
+  S.sigActive=!S.sigActive;
+  const row=document.getElementById('chkSig');
+  const box=document.getElementById('chkBox');
+  const block=document.getElementById('sigBlock');
+  row.classList.toggle('on',S.sigActive);
+  box.textContent=S.sigActive?'✓':'';
+  block.classList.toggle('hidden',!S.sigActive);
+  if(S.sigActive) setTimeout(initSig,200);
+}
+
+function initSig(){
+  const c=document.getElementById('sig1');
+  if(!c)return;
+  c.width=c.offsetWidth*window.devicePixelRatio;
+  c.height=c.offsetHeight*window.devicePixelRatio;
+  const ctx=c.getContext('2d');
+  ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
+  ctx.strokeStyle='#1A1A1A';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';
+  sigCtx=ctx;sigDrawing=false;
+  const pos=e=>{const r=c.getBoundingClientRect(),t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top}};
+  c.addEventListener('touchstart',e=>{e.preventDefault();const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);sigDrawing=true},{passive:false});
+  c.addEventListener('touchmove',e=>{e.preventDefault();if(!sigDrawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke()},{passive:false});
+  c.addEventListener('touchend',e=>{e.preventDefault();sigDrawing=false},{passive:false});
+  c.addEventListener('mousedown',e=>{const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);sigDrawing=true});
+  c.addEventListener('mousemove',e=>{if(!sigDrawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke()});
+  c.addEventListener('mouseup',()=>sigDrawing=false);
+}
+function clearSig(){const c=document.getElementById('sig1');c.getContext('2d').clearRect(0,0,c.width,c.height)}
+
+// Résumé
+function buildResume(){
+  const dateF=new Date(S.dateInter+'T12:00:00').toLocaleDateString('fr-CA',{day:'2-digit',month:'long',year:'numeric'});
+  const prioMap={urgent:'🔴 Urgent',normal:'🟡 Normal',planifie:'🟢 Planifié'};
+  const prioClass={urgent:'b-urgent',normal:'b-normal',planifie:'b-planifie'};
+  const rows=[
+    ['Priorité',`<span class="badge ${prioClass[S.priorite]}">${prioMap[S.priorite]}</span>`],
+    ['Bâtiment',S.batiment],
+    ['Unité',S.unite||'—'],
+    ['Locataire',S.locataire||'— (bâtiment)'],
+    ['Catégorie',S.categorie],
+    ['Date',dateF],
+    ['Intervenant',S.intervenant],
+    ['Arrivée / Départ',(S.heureArrivee||'—')+' → '+(S.heureDepart||'—')],
+    ['Statut',S.statut],
+    ['Photos',S.photos.length+' photo'+(S.photos.length!==1?'s':'')],
+    ['Signature locataire',S.sigActive?'✅ Oui':'Non requise'],
+  ];
+  document.getElementById('resumeContent').innerHTML=rows.map(([l,v])=>`
+    <div class="res-row"><span class="res-label">${l}</span><span class="res-val">${v}</span></div>
+  `).join('');
+
+  const dateStr=S.dateInter.replace(/-/g,'');
+  const slug=S.batiment.replace(/[^a-zA-Z0-9]/g,'_').substring(0,15);
+  S.nomFichier=`ticket_${slug}_${dateStr}.json`;
+  document.getElementById('nomFichierStep').textContent=S.nomFichier;
+}
+
+// Export
+function dlData(){
+  const obj={
+    meta:{
+      priorite:S.priorite,batiment:S.batiment,unite:S.unite,
+      locataire:S.locataire,categorie:S.categorie,description:S.description,
+      dateIntervention:S.dateInter,intervenant:S.intervenant,
+      heureArrivee:S.heureArrivee,heureDepart:S.heureDepart,
+      travauxEffectues:S.travauxEffectues,statut:S.statut,
+      notes:S.notes,fournisseur:S.fournisseur,
+      generatedAt:new Date().toISOString()
+    },
+    photos:S.photos,
+    signature:{active:S.sigActive,image:S.sigImage,nom:S.nomLocSig}
+  };
+  const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=S.nomFichier;
+  a.click();
+  setTimeout(()=>{
+    document.getElementById('dlStatus').classList.add('show');
+    document.getElementById('btnDl').textContent='✅ Fichier téléchargé';
+    document.getElementById('btnDl').disabled=true;
+    document.getElementById('btnDl').style.opacity='.6';
+  },800);
+}
+
+function resetApp(){
+  if(!confirm('Démarrer un nouveau rapport ?'))return;
+  S={priorite:null,batiment:'',unite:'',locataire:'',categorie:'',description:'',dateInter:'',intervenant:'',heureArrivee:'',heureDepart:'',travauxEffectues:'',statut:'✅ Complété',notes:'',fournisseur:'',photos:[],sigActive:false,sigImage:null,nomLocSig:'',nomFichier:''};
+  ['batiment','unite','locataire','categorie','description','intervenant','heureArrivee','heureDepart','travauxEffectues','notes','fournisseur','nomLocSig'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  document.getElementById('statut').value='✅ Complété';
+  document.getElementById('dateInter').valueAsDate=new Date();
+  document.getElementById('pgrid').innerHTML='';
+  document.querySelectorAll('.prio-opt').forEach(e=>e.className='prio-opt');
+  document.getElementById('chkSig').classList.remove('on');
+  document.getElementById('chkBox').textContent='';
+  document.getElementById('sigBlock').classList.add('hidden');
+  document.getElementById('dlStatus').classList.remove('show');
+  document.getElementById('btnDl').textContent='💾 Télécharger le fichier rapport';
+  document.getElementById('btnDl').disabled=false;
+  document.getElementById('btnDl').style.opacity='1';
+  showS('s1');
+}
+
+document.getElementById('dateInter').valueAsDate=new Date();
+</script>
+</body>
+</html>
